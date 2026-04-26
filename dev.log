@@ -1,0 +1,187 @@
+
+> abstract-events@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.20.10.3:3000
+✓ Ready in 1936ms
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next/dev/types/**/*.ts'
+
+  The following mandatory changes were made to your tsconfig.json:
+
+  	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+
+
+○ Compiling / ...
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET / 500 in 6.8s (next.js: 6.5s, application-code: 332ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET /events 500 in 1269ms (next.js: 1234ms, application-code: 35ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET /calendar 500 in 1763ms (next.js: 1740ms, application-code: 23ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET /submit 500 in 1437ms (next.js: 1413ms, application-code: 23ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET /admin 500 in 1047ms (next.js: 1026ms, application-code: 21ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET /login 500 in 675ms (next.js: 658ms, application-code: 17ms)
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'autoprefixer'
+Require stack:
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[root-of-the-server]__0iv9ksq._.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\chunks\[turbopack]_runtime.js
+- C:\Users\LENOVO\Desktop\Abstract Hub\.next\dev\build\postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1051:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:19)]
+    [at require (node:internal/modules/helpers:179:18)]
+    [at <anonymous> (turbopack:///[turbopack-node]/transforms/postcss.ts:49:25)]
+    [at <anonymous>]
+    [at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:74:20)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET / 500 in 17ms (next.js: 7ms, application-code: 11ms)
+✓ Compiled in 2.7s
+ GET / 200 in 1034ms (next.js: 261ms, application-code: 773ms)
+ GET /events 200 in 231ms (next.js: 19ms, application-code: 212ms)
+ GET /submit 200 in 191ms (next.js: 18ms, application-code: 173ms)
+ GET /admin 200 in 185ms (next.js: 17ms, application-code: 168ms)
+[?25h
