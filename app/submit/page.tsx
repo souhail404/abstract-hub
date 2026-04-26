@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -38,7 +39,17 @@ const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/Lon
 
 export default function SubmitEventPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { toast } = useToast();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
+
+  if (status === "loading" || status === "unauthenticated") {
+    return <div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>;
+  }
   const [submitted, setSubmitted] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [tagInput, setTagInput] = useState("");

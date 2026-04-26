@@ -12,7 +12,8 @@
       "Bash(netstat -ano)",
       "Bash(findstr \":3000\")",
       "Bash(taskkill /PID 12968 /F)",
-      "PowerShell(Stop-Process -Id 12968 -Force -ErrorAction SilentlyContinue)"
+      "PowerShell(Stop-Process -Id 12968 -Force -ErrorAction SilentlyContinue)",
+      "Bash(gh --version)"
     ]
   }
 }
