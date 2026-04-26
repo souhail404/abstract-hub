@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Lightweight middleware — reads the session cookie directly
+// Lightweight proxy — reads the session cookie directly
 // (avoids importing Prisma/auth which would exceed the 1 MB edge limit)
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const protectedPaths = ["/submit", "/dashboard"];
@@ -23,5 +23,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
