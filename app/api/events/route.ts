@@ -9,12 +9,18 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const creatorId = searchParams.get("creatorId");
 
-  const isAdmin = session?.user?.role === "admin";
+  // Admin check: DB role OR valid admin-secret header
+  const adminSecret = req.headers.get("x-admin-secret");
+  const isAdmin =
+    session?.user?.role === "admin" ||
+    (adminSecret != null && adminSecret === process.env.ADMIN_SECRET);
 
   const where: Record<string, unknown> = {};
 
   if (isAdmin && status) {
     where.status = status;
+  } else if (isAdmin && !status && !creatorId) {
+    // Admin fetching all events with no filter
   } else if (creatorId && session?.user?.id === creatorId) {
     // Creator viewing their own events
     where.creatorId = creatorId;
@@ -83,11 +89,17 @@ export async function POST(req: NextRequest) {
     "-" +
     Date.now().toString(36);
 
-  // Ensure the user exists as a creator (promote role)
-  await prisma.user.update({
+  // Promote user to creator (but never demote an existing admin)
+  const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    data: { role: session.user.role === "admin" ? "admin" : "creator" },
+    select: { role: true },
   });
+  if (currentUser?.role !== "admin") {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { role: "creator" },
+    });
+  }
 
   const event = await prisma.event.create({
     data: {

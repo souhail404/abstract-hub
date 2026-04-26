@@ -52,12 +52,17 @@ export default function DashboardPage() {
   }, [status, router]);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (status === "loading") return; // still resolving
+    if (!session?.user?.id) {
+      setLoading(false);
+      return;
+    }
     fetch(`/api/events?creatorId=${session.user.id}`)
       .then((r) => r.json())
       .then((data) => setEvents(Array.isArray(data) ? data : []))
+      .catch(() => setEvents([]))
       .finally(() => setLoading(false));
-  }, [session?.user?.id]);
+  }, [session?.user?.id, status]);
 
   const stats = {
     total: events.length,

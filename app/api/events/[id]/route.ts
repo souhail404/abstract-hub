@@ -8,11 +8,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.id) {
+
+  // Admin check: DB role OR valid admin-secret header
+  const adminSecret = req.headers.get("x-admin-secret");
+  const isAdmin =
+    session?.user?.role === "admin" ||
+    (adminSecret != null && adminSecret === process.env.ADMIN_SECRET);
+
+  // Must be either an admin (via secret or role) or a logged-in user
+  if (!session?.user?.id && !isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const isAdmin = session.user.role === "admin";
   const { id } = await params;
   const body = await req.json();
   const { status, featured, rejectionReason } = body;

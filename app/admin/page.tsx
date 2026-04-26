@@ -36,6 +36,13 @@ import { useToast } from "@/components/ui/use-toast";
 const ADMIN_PIN = "2612"; // change this to your secret PIN
 const SESSION_KEY = "abstract_admin_auth";
 
+// Shared secret sent with every admin API request so the server can
+// authorise the call even if the session doesn't have role="admin" yet.
+const ADMIN_HEADERS = {
+  "Content-Type": "application/json",
+  "x-admin-secret": ADMIN_PIN,
+};
+
 function PinGate({ onUnlock }: { onUnlock: () => void }) {
   const [digits, setDigits] = useState(["", "", "", ""]);
   const [error, setError] = useState(false);
@@ -179,8 +186,8 @@ export default function AdminDashboard() {
     if (!authed) return;
     setLoadingData(true);
     Promise.all([
-      fetch("/api/events?status=pending").then((r) => r.json()),
-      fetch("/api/events?status=approved").then((r) => r.json()),
+      fetch("/api/events?status=pending", { headers: ADMIN_HEADERS }).then((r) => r.json()),
+      fetch("/api/events?status=approved", { headers: ADMIN_HEADERS }).then((r) => r.json()),
     ])
       .then(([pending, approved]) => {
         setPendingEvents(Array.isArray(pending) ? pending : []);
@@ -196,7 +203,7 @@ export default function AdminDashboard() {
     const event = pendingEvents.find((e) => e.id === id);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: ADMIN_HEADERS,
       body: JSON.stringify({ status: "approved" }),
     });
     if (res.ok) {
@@ -210,7 +217,7 @@ export default function AdminDashboard() {
     const event = pendingEvents.find((e) => e.id === id);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: ADMIN_HEADERS,
       body: JSON.stringify({ status: "rejected" }),
     });
     if (res.ok) {
@@ -223,7 +230,7 @@ export default function AdminDashboard() {
     const event = approvedEvents.find((e) => e.id === id);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: ADMIN_HEADERS,
       body: JSON.stringify({ featured: !event?.featured }),
     });
     if (res.ok) {
@@ -238,7 +245,7 @@ export default function AdminDashboard() {
     const event = approvedEvents.find((e) => e.id === id);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: ADMIN_HEADERS,
       body: JSON.stringify({ status: "archived" }),
     });
     if (res.ok) {
