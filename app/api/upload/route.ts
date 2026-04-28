@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -8,8 +7,8 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const adminSecret = req.headers.get("x-admin-secret");
+  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,9 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  // Max 5 MB
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "File too large (max 5 MB)" }, { status: 400 });
+  // Max 10 MB
+  if (file.size > 10 * 1024 * 1024) {
+    return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 });
   }
 
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split(".").pop();
-  const filename = `events/${session.user.id}-${Date.now()}.${ext}`;
+  const filename = `events/admin-${Date.now()}.${ext}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);

@@ -17,6 +17,7 @@ import {
   Shield,
   Sparkles,
   Star,
+  Upload,
   Users,
   XCircle,
   Zap,
@@ -167,6 +168,140 @@ interface DbEvent {
   reminderCount: number;
   creator: { id: string; displayName?: string; name?: string; image?: string };
   tags: string[];
+}
+
+// ── Banner Uploader ───────────────────────────────────────────────────────────
+function BannerUploader({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [preview, setPreview] = useState<string>("");
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "x-admin-secret": ADMIN_PIN },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      onChange(url);
+    } catch {
+      setPreview("");
+      onChange("");
+      alert("Upload failed — check Supabase storage is set up.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const clear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreview("");
+    onChange("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const displaySrc = preview || value;
+
+  return (
+    <div className="space-y-2">
+      {/* Drop zone */}
+      <div
+        onClick={() => fileRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const f = e.dataTransfer.files?.[0];
+          if (f) handleFile(f);
+        }}
+        className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all overflow-hidden ${
+          dragOver
+            ? "border-primary bg-primary/10"
+            : displaySrc
+              ? "border-primary/30"
+              : "border-border/60 hover:border-primary/40 hover:bg-primary/5"
+        }`}
+      >
+        {displaySrc ? (
+          <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={displaySrc} alt="Banner preview" className="w-full h-48 object-cover" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <Upload className="h-5 w-5 text-white" />
+              <span className="text-white text-sm font-medium">Replace</span>
+            </div>
+            {uploading && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <RefreshCw className="h-6 w-6 text-primary animate-spin" />
+                <span className="text-white text-sm ml-2">Uploading…</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={clear}
+              className="absolute top-2 right-2 bg-black/70 hover:bg-destructive text-white rounded-full h-7 w-7 flex items-center justify-center text-xs transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div className="py-10 flex flex-col items-center gap-2 text-muted-foreground">
+            {uploading ? (
+              <>
+                <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                <span className="text-sm">Uploading…</span>
+              </>
+            ) : (
+              <>
+                <Upload className="h-8 w-8" />
+                <span className="text-sm">
+                  Drag & drop or <span className="text-primary font-medium">browse</span>
+                </span>
+                <span className="text-xs">PNG, JPG, WebP, GIF · max 10 MB</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+      />
+
+      {/* Fallback URL input */}
+      <Input
+        type="url"
+        placeholder="…or paste an image URL"
+        value={preview ? "" : value}
+        onChange={(e) => { setPreview(""); onChange(e.target.value); }}
+        className="h-9 text-xs"
+      />
+    </div>
+  );
 }
 
 const EVENT_TYPES_LIST = [
@@ -486,15 +621,11 @@ export default function AdminDashboard() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="ce-banner">Banner Image URL</Label>
-                    <Input
-                      id="ce-banner"
-                      type="url"
-                      placeholder="https://…"
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Banner Image</Label>
+                    <BannerUploader
                       value={newForm.bannerImage}
-                      onChange={(e) => updateNew("bannerImage", e.target.value)}
-                      className="h-11"
+                      onChange={(url) => updateNew("bannerImage", url)}
                     />
                   </div>
 
