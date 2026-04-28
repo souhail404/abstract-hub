@@ -29,7 +29,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 glass">
+    <header className="sticky top-0 z-50 w-full glass" style={{ borderBottom: "1px solid rgba(74,222,128,0.08)" }}>
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">

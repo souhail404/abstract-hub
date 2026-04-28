@@ -30,12 +30,12 @@ const TIME_FILTERS = [
 
 function EventSkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden animate-pulse">
-      <div className="aspect-[16/7] bg-muted" />
+    <div className="rounded-2xl overflow-hidden glass-card animate-pulse">
+      <div className="aspect-[16/7] bg-white/[0.03]" />
       <div className="p-4 space-y-3">
-        <div className="h-4 bg-muted rounded w-3/4" />
-        <div className="h-3 bg-muted rounded w-1/2" />
-        <div className="h-3 bg-muted rounded w-1/3" />
+        <div className="h-4 rounded-lg bg-white/[0.04] w-3/4" />
+        <div className="h-3 rounded-lg bg-white/[0.03] w-1/2" />
+        <div className="h-3 rounded-lg bg-white/[0.03] w-1/3" />
       </div>
     </div>
   );
@@ -205,8 +205,8 @@ export default function EventsPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border/60 py-20 text-center">
-            <LayoutGrid className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+          <div className="rounded-3xl glass-card py-20 text-center">
+            <LayoutGrid className="h-10 w-10 text-primary/20 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No events found
             </h3>

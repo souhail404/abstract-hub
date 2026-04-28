@@ -33,26 +33,50 @@ export interface DbEvent {
   };
 }
 
+type CardVariant = "default" | "featured" | "live";
+
 interface DbEventCardProps {
   event: DbEvent;
   index?: number;
+  variant?: CardVariant;
 }
 
-export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
+// Per-variant glass class and accent colours
+const VARIANT_CLASS: Record<CardVariant, string> = {
+  default:  "glass-card",
+  featured: "glass-card-featured",
+  live:     "glass-card-live",
+};
+
+const VARIANT_HOVER: Record<CardVariant, string> = {
+  default:
+    "hover:border-primary/30 hover:shadow-[0_12px_48px_rgba(0,0,0,0.6),0_4px_16px_rgba(74,222,128,0.12)] hover:-translate-y-1",
+  featured:
+    "hover:border-amber-400/35 hover:shadow-[0_12px_48px_rgba(0,0,0,0.6),0_4px_20px_rgba(251,191,36,0.14)] hover:-translate-y-1",
+  live:
+    "hover:border-red-400/35 hover:shadow-[0_12px_48px_rgba(0,0,0,0.6),0_4px_20px_rgba(239,68,68,0.14)] hover:-translate-y-1",
+};
+
+export function DbEventCard({ event, index = 0, variant = "default" }: DbEventCardProps) {
   const live = isEventLive(event.startTime, event.endTime);
+  const effectiveVariant: CardVariant = live ? "live" : variant;
   const link =
     event.streamLink || event.twitterLink || event.externalLink || event.abstractPortalLink;
   const creatorName = event.creator.displayName || event.creator.name;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.06 }}
-      className="group relative rounded-2xl border border-border bg-card overflow-hidden card-glow-hover"
+      transition={{ duration: 0.4, delay: index * 0.07 }}
+      className={cn(
+        "group relative rounded-2xl overflow-hidden transition-all duration-300",
+        VARIANT_CLASS[effectiveVariant],
+        VARIANT_HOVER[effectiveVariant]
+      )}
     >
       {/* Banner */}
-      <div className="relative aspect-[16/7] overflow-hidden bg-card">
+      <div className="relative aspect-[16/7] overflow-hidden">
         {event.bannerImage ? (
           <Image
             src={event.bannerImage}
@@ -62,31 +86,52 @@ export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-card to-card flex items-center justify-center">
+          /* Placeholder: animated green gradient */
+          <div className="absolute inset-0 flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(8,16,10,0.9) 100%)",
+            }}
+          >
             <Zap className="h-10 w-10 text-primary/20" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-card/10 to-transparent" />
 
-        {/* Top badges */}
+        {/* Gradient overlay: hard at bottom for readability */}
+        <div className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(4,10,6,0.85) 0%, rgba(4,10,6,0.2) 50%, transparent 100%)",
+          }}
+        />
+
+        {/* Top-left badges */}
         <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
           {live && (
-            <span className="flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1.5 bg-red-500/90 backdrop-blur-md text-white text-xs font-black px-2.5 py-1 rounded-full tracking-wide shadow-lg shadow-red-500/30">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
               </span>
               LIVE
             </span>
           )}
           {event.featured && !live && (
-            <span className="bg-amber-500/20 backdrop-blur-sm text-amber-400 border border-amber-500/30 text-xs font-medium px-2.5 py-1 rounded-full">
+            <span
+              className="text-xs font-bold px-2.5 py-1 rounded-full tracking-wide shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, rgba(251,191,36,0.2), rgba(217,119,6,0.15))",
+                border: "1px solid rgba(251,191,36,0.35)",
+                color: "#fbbf24",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 2px 12px rgba(251,191,36,0.2)",
+              }}
+            >
               ✦ Featured
             </span>
           )}
           <span
             className={cn(
-              "text-xs px-2.5 py-1 rounded-full border font-medium backdrop-blur-sm",
+              "text-xs px-2.5 py-1 rounded-full border font-semibold backdrop-blur-md",
               EVENT_TYPE_COLORS[event.eventType]
             )}
           >
@@ -94,30 +139,38 @@ export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
           </span>
         </div>
 
-        {/* Countdown top right */}
+        {/* Countdown — top right */}
         {!live && (
           <div className="absolute top-3 right-3">
-            <div className="glass rounded-xl px-3 py-1.5">
+            <div
+              className="rounded-xl px-3 py-1.5 text-xs font-medium"
+              style={{
+                background: "rgba(4,10,6,0.75)",
+                border: "1px solid rgba(74,222,128,0.15)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
               <CountdownTimer startTime={event.startTime} endTime={event.endTime} compact />
             </div>
           </div>
         )}
       </div>
 
-      {/* Content */}
+      {/* Body */}
       <div className="p-4">
+        {/* Title */}
         <Link href={`/events/${event.slug}`}>
-          <h3 className="font-semibold text-foreground leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-foreground leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">
             {event.title}
           </h3>
         </Link>
 
         {/* Date/Time */}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-          <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+          <Calendar className="h-3.5 w-3.5 shrink-0" />
           <span>{formatEventDate(event.startTime)}</span>
-          <span className="text-border">·</span>
-          <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="opacity-40">·</span>
+          <Clock className="h-3.5 w-3.5 shrink-0" />
           <span>{formatEventTime(event.startTime)} UTC</span>
         </div>
 
@@ -127,7 +180,12 @@ export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
             {event.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="text-xs bg-secondary/80 text-muted-foreground rounded-md px-2 py-0.5"
+                className="text-xs rounded-lg px-2 py-0.5"
+                style={{
+                  background: "rgba(74,222,128,0.07)",
+                  border: "1px solid rgba(74,222,128,0.12)",
+                  color: "rgba(134,239,172,0.8)",
+                }}
               >
                 #{tag}
               </span>
@@ -136,7 +194,10 @@ export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50">
+        <div
+          className="flex items-center justify-between pt-3"
+          style={{ borderTop: "1px solid rgba(74,222,128,0.08)" }}
+        >
           {creatorName ? (
             <span className="text-xs text-muted-foreground truncate max-w-[120px]">
               {creatorName}
@@ -157,7 +218,11 @@ export function DbEventCard({ event, index = 0 }: DbEventCardProps) {
               </a>
             )}
             <Link href={`/events/${event.slug}`}>
-              <Button variant="glow" size="sm" className="h-7 text-xs gap-1">
+              <Button
+                variant="glow"
+                size="sm"
+                className="h-7 text-xs gap-1 font-semibold"
+              >
                 View
               </Button>
             </Link>
