@@ -49,11 +49,26 @@
 
 @layer utilities {
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-green-300 to-teal-400;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #4ade80 0%, #22c55e 40%, #86efac 80%, #4ade80 100%);
+  }
+
+  .gradient-text-hero {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      #86efac 0%,
+      #4ade80 25%,
+      #22c55e 50%,
+      #4ade80 75%,
+      #86efac 100%
+    );
+    background-size: 200% auto;
+    animation: shimmer 4s linear infinite;
   }
 
   .card-glow {
-    box-shadow: 0 0 0 1px rgba(0, 201, 106, 0.1), 0 4px 24px rgba(0, 201, 106, 0.05);
+    box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.1), 0 4px 24px rgba(74, 222, 128, 0.05);
   }
 
   .card-glow-hover {
@@ -61,7 +76,7 @@
   }
 
   .card-glow-hover:hover {
-    box-shadow: 0 0 0 1px rgba(0, 201, 106, 0.3), 0 8px 40px rgba(0, 201, 106, 0.12);
+    box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.3), 0 8px 40px rgba(74, 222, 128, 0.12);
     transform: translateY(-2px);
   }
 
@@ -70,8 +85,8 @@
   }
 
   .abstract-grid {
-    background-image: linear-gradient(rgba(0, 201, 106, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 201, 106, 0.03) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(74, 222, 128, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74, 222, 128, 0.03) 1px, transparent 1px);
     background-size: 64px 64px;
   }
 

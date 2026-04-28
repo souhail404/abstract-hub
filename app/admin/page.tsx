@@ -11,15 +11,12 @@ import {
   CheckCircle2,
   Clock,
   Eye,
-  Flame,
-  LayoutDashboard,
   Lock,
+  Plus,
   RefreshCw,
   Shield,
   Sparkles,
   Star,
-  Trash2,
-  TrendingUp,
   Users,
   XCircle,
   Zap,
@@ -29,6 +26,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatEventDateTime, EVENT_TYPE_COLORS, cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -168,6 +169,30 @@ interface DbEvent {
   tags: string[];
 }
 
+const EVENT_TYPES_LIST = [
+  "AMA", "Tournament", "Stream", "Interview", "Workshop",
+  "Community Call", "Education", "Gaming", "Other",
+];
+const LANGUAGES_LIST = ["English", "Spanish", "Chinese", "Korean", "Japanese", "French", "Portuguese", "German"];
+const TIMEZONES_LIST = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Asia/Tokyo", "Asia/Seoul", "Asia/Shanghai"];
+
+const BLANK_FORM = {
+  title: "",
+  description: "",
+  eventType: "",
+  language: "English",
+  timezone: "UTC",
+  startDate: "",
+  startTime: "",
+  endDate: "",
+  endTime: "",
+  twitterLink: "",
+  streamLink: "",
+  externalLink: "",
+  abstractPortalLink: "",
+  bannerImage: "",
+};
+
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [authed, setAuthed] = useState(false);
@@ -175,6 +200,80 @@ export default function AdminDashboard() {
   const [pendingEvents, setPendingEvents] = useState<DbEvent[]>([]);
   const [approvedEvents, setApprovedEvents] = useState<DbEvent[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+
+  // ── Create event state ────────────────────────────────────────────────────
+  const [newForm, setNewForm] = useState(BLANK_FORM);
+  const [newTags, setNewTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  const updateNew = (field: string, value: string) =>
+    setNewForm((prev) => ({ ...prev, [field]: value }));
+
+  const addTag = () => {
+    if (tagInput.trim() && !newTags.includes(tagInput.trim()) && newTags.length < 10) {
+      setNewTags((p) => [...p, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newForm.title || !newForm.eventType || !newForm.startDate || !newForm.startTime) {
+      toast({ variant: "destructive", title: "Missing fields", description: "Title, type, start date and time are required." });
+      return;
+    }
+    setCreating(true);
+    try {
+      const startISO = new Date(`${newForm.startDate}T${newForm.startTime}`).toISOString();
+      const endISO = newForm.endDate && newForm.endTime
+        ? new Date(`${newForm.endDate}T${newForm.endTime}`).toISOString()
+        : new Date(new Date(`${newForm.startDate}T${newForm.startTime}`).getTime() + 3600000).toISOString();
+
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({
+          title: newForm.title,
+          description: newForm.description,
+          eventType: newForm.eventType,
+          language: newForm.language,
+          timezone: newForm.timezone,
+          startTime: startISO,
+          endTime: endISO,
+          twitterLink: newForm.twitterLink || null,
+          streamLink: newForm.streamLink || null,
+          externalLink: newForm.externalLink || null,
+          abstractPortalLink: newForm.abstractPortalLink || null,
+          bannerImage: newForm.bannerImage || null,
+          tags: newTags,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to create");
+      }
+
+      const created = await res.json();
+      toast({ title: "Event published!", description: `"${created.title}" is now live.` });
+      setNewForm(BLANK_FORM);
+      setNewTags([]);
+      setTagInput("");
+      // Refresh approved list
+      fetch("/api/events?status=approved", { headers: ADMIN_HEADERS })
+        .then((r) => r.json())
+        .then((data) => setApprovedEvents(Array.isArray(data) ? data : []));
+    } catch (err: unknown) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? err.message : "Could not create event.",
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY) === "1") setAuthed(true);
@@ -299,8 +398,12 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <Tabs defaultValue="pending" className="space-y-6">
+        <Tabs defaultValue="create" className="space-y-6">
           <TabsList className="bg-card border border-border">
+            <TabsTrigger value="create" className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Event
+            </TabsTrigger>
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" />
               Pending
@@ -312,13 +415,195 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="approved" className="gap-2">
               <CheckCircle2 className="h-4 w-4" />
-              Approved ({approvedEvents.length})
+              Live ({approvedEvents.length})
             </TabsTrigger>
             <TabsTrigger value="creators" className="gap-2">
               <Users className="h-4 w-4" />
               Creators
             </TabsTrigger>
           </TabsList>
+
+          {/* ── New Event Tab ─────────────────────────────────────────────── */}
+          <TabsContent value="create">
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                Create New Event
+              </h3>
+              <form onSubmit={handleCreate} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="ce-title">Title *</Label>
+                    <Input
+                      id="ce-title"
+                      placeholder="Event title"
+                      value={newForm.title}
+                      onChange={(e) => updateNew("title", e.target.value)}
+                      className="h-11"
+                      maxLength={120}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Event Type *</Label>
+                    <Select value={newForm.eventType} onValueChange={(v) => updateNew("eventType", v)}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Select type…" /></SelectTrigger>
+                      <SelectContent>
+                        {EVENT_TYPES_LIST.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Language</Label>
+                    <Select value={newForm.language} onValueChange={(v) => updateNew("language", v)}>
+                      <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES_LIST.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="ce-desc">Description</Label>
+                    <Textarea
+                      id="ce-desc"
+                      placeholder="Event description…"
+                      value={newForm.description}
+                      onChange={(e) => updateNew("description", e.target.value)}
+                      rows={3}
+                      maxLength={2000}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Timezone</Label>
+                    <Select value={newForm.timezone} onValueChange={(v) => updateNew("timezone", v)}>
+                      <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {TIMEZONES_LIST.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-banner">Banner Image URL</Label>
+                    <Input
+                      id="ce-banner"
+                      type="url"
+                      placeholder="https://…"
+                      value={newForm.bannerImage}
+                      onChange={(e) => updateNew("bannerImage", e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-sdate">Start Date *</Label>
+                    <Input
+                      id="ce-sdate"
+                      type="date"
+                      value={newForm.startDate}
+                      onChange={(e) => updateNew("startDate", e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-stime">Start Time *</Label>
+                    <Input
+                      id="ce-stime"
+                      type="time"
+                      value={newForm.startTime}
+                      onChange={(e) => updateNew("startTime", e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-edate">End Date</Label>
+                    <Input
+                      id="ce-edate"
+                      type="date"
+                      value={newForm.endDate}
+                      onChange={(e) => updateNew("endDate", e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-etime">End Time</Label>
+                    <Input
+                      id="ce-etime"
+                      type="time"
+                      value={newForm.endTime}
+                      onChange={(e) => updateNew("endTime", e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-stream">Stream Link</Label>
+                    <Input id="ce-stream" type="url" placeholder="https://twitch.tv/…" value={newForm.streamLink} onChange={(e) => updateNew("streamLink", e.target.value)} className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-twitter">Twitter / X Link</Label>
+                    <Input id="ce-twitter" type="url" placeholder="https://twitter.com/…" value={newForm.twitterLink} onChange={(e) => updateNew("twitterLink", e.target.value)} className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-ext">External Link</Label>
+                    <Input id="ce-ext" type="url" placeholder="https://…" value={newForm.externalLink} onChange={(e) => updateNew("externalLink", e.target.value)} className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ce-abs">Abstract Portal Link</Label>
+                    <Input id="ce-abs" type="url" placeholder="https://abs.xyz/…" value={newForm.abstractPortalLink} onChange={(e) => updateNew("abstractPortalLink", e.target.value)} className="h-11" />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Tags</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add tag…"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                        className="h-10"
+                      />
+                      <Button type="button" variant="outline" size="sm" onClick={addTag} className="h-10 px-4">Add</Button>
+                    </div>
+                    {newTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {newTags.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => setNewTags((p) => p.filter((t) => t !== tag))}
+                            className="text-xs bg-primary/10 text-primary border border-primary/20 rounded-full px-3 py-1 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                          >
+                            #{tag} ×
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    variant="gradient"
+                    className="w-full sm:w-auto gap-2"
+                    disabled={creating}
+                  >
+                    {creating ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Zap className="h-4 w-4" />
+                    )}
+                    {creating ? "Publishing…" : "Publish Event"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </TabsContent>
 
           {/* Pending Tab */}
           <TabsContent value="pending">

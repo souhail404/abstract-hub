@@ -48,10 +48,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(events);
 }
 
-// POST /api/events — submit a new event (requires auth)
+// POST /api/events — create a new event (admin only, auto-approved)
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const adminSecret = req.headers.get("x-admin-secret");
+  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     recurrenceDays,
   } = body;
 
-  if (!title || !description || !eventType || !startTime || !endTime) {
+  if (!title || !eventType || !startTime || !endTime) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -89,23 +89,24 @@ export async function POST(req: NextRequest) {
     "-" +
     Date.now().toString(36);
 
-  // Promote user to creator (but never demote an existing admin)
-  const currentUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
+  // Use the site owner (first user in DB) as the creator
+  const ownerUser = await prisma.user.findFirst({
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
   });
-  if (currentUser?.role !== "admin") {
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { role: "creator" },
-    });
+
+  if (!ownerUser) {
+    return NextResponse.json(
+      { error: "No user found in database — please log in once first" },
+      { status: 500 }
+    );
   }
 
   const event = await prisma.event.create({
     data: {
       slug,
       title,
-      description,
+      description: description || "",
       bannerImage: bannerImage || null,
       eventType,
       language: language || "English",
@@ -119,8 +120,8 @@ export async function POST(req: NextRequest) {
       tags: tags || [],
       recurrenceType: recurrenceType || "none",
       recurrenceDays: recurrenceDays || [],
-      status: "pending",
-      creatorId: session.user.id,
+      status: "approved", // admin-created events are published immediately
+      creatorId: ownerUser.id,
     },
     include: {
       creator: true,
